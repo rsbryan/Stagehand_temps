@@ -63,38 +63,38 @@ function humanDate(dateISO: string): string {
 // ========== Restaurant Search & Navigation ==========
 
 async function searchAndNavigateToRestaurant(page: any, restaurantName: string): Promise<void> {
-  console.log(`🔍 Searching for restaurant: ${restaurantName}`);
+  console.log(`Searching for restaurant: ${restaurantName}`);
   
   try {
     // AI-powered search approach
-    console.log("🤖 Using AI to search and navigate...");
+    console.log("Using AI to search and navigate...");
     await page.act(`Find the main search input on this OpenTable homepage and search for "${restaurantName}". If suggestions appear, click the matching restaurant, otherwise submit the search.`);
     await page.waitForTimeout(3000);
     
     // Handle submission if still on homepage
     if (page.url() === "https://www.opentable.com/") {
-      console.log("🔄 Submitting search...");
+      console.log("Submitting search...");
       await page.act(`Click the search button or press Enter to submit the search for "${restaurantName}"`);
       await page.waitForTimeout(3000);
     }
     
     // Navigate from search results to restaurant page
     if (/\/s\?/.test(page.url())) {
-      console.log("📄 Clicking restaurant from search results...");
+      console.log("Clicking restaurant from search results...");
       await page.act(`Click on the restaurant card or link for "${restaurantName}"`);
       await page.waitForTimeout(2000);
     }
     
   } catch (error) {
-    console.log("❌ AI search failed:", error.message);
-    console.log("🔄 Continuing with available options...");
+    console.log("AI search failed:", error.message);
+    console.log("Continuing with available options...");
   }
 }
 
 // ========== Reservation Booking Process ==========
 
 async function setReservationDetails(page: any, intent: BookingIntent): Promise<void> {
-  console.log("📅 Setting reservation details...");
+  console.log("Setting reservation details...");
   
   const dateHuman = humanDate(intent.dateISO);
   const timeHuman = to12hr(intent.time24);
@@ -104,74 +104,74 @@ async function setReservationDetails(page: any, intent: BookingIntent): Promise<
       `On this restaurant page, set party size to ${intent.party}, set date to "${dateHuman}", set time to "${timeHuman}", then refresh availability.`
     );
   } catch (error) {
-    console.log("❌ Could not set reservation details:", error.message);
+    console.log("Could not set reservation details:", error.message);
   }
 }
 
 async function selectTimeSlot(page: any, targetTime: string): Promise<boolean> {
   const timeHuman = to12hr(targetTime);
-  console.log(`🕐 Looking for time slot near: ${timeHuman}`);
+  console.log(`Looking for time slot near: ${timeHuman}`);
 
   try {
     await page.act(`Scroll to the "Select a time" section, then click the visible reservation time closest to ${timeHuman}.`);
-    console.log("✅ Time slot selected successfully");
+    console.log("Time slot selected successfully");
     return true;
   } catch (error) {
-    console.log("❌ Could not select time slot:", error.message);
+    console.log("Could not select time slot:", error.message);
     return false;
   }
 }
 
 async function selectSeatingOption(page: any): Promise<void> {
-  console.log("🪑 Selecting seating option...");
+  console.log("Selecting seating option...");
   
   try {
     await page.act("Select the 'Standard' seating option and proceed to the next step");
-    console.log("✅ Seating option selected");
+    console.log("Seating option selected");
   } catch (error) {
-    console.log("❌ Could not select seating:", error.message);
+    console.log("Could not select seating:", error.message);
   }
 }
 
 async function fillGuestInformation(page: any): Promise<void> {
-  console.log("👤 Filling guest details...");
+  console.log("Filling guest details...");
   
   const guestName = "John Smith";
   const guestEmail = "john.smith@example.com";
   
   try {
     await page.act(`Fill in the guest details form with name "${guestName}" and email "${guestEmail}". Do not create an account.`);
-    console.log("✅ Guest details filled");
+    console.log("Guest details filled");
   } catch (error) {
-    console.log("❌ Could not fill guest details:", error.message);
+    console.log("Could not fill guest details:", error.message);
   }
 }
 
 async function fillPhoneNumber(page: any): Promise<void> {
   if (!PHONE) return;
   
-  console.log("📱 Filling phone number...");
+  console.log("Filling phone number...");
   try {
     await page.act(`If a phone number field is visible, enter "${PHONE}" (US format). Do not attempt to log in.`);
   } catch (error) {
-    console.log("❌ Could not fill phone number:", error.message);
+    console.log("Could not fill phone number:", error.message);
   }
 }
 
 async function completeReservation(page: any): Promise<void> {
-  console.log("🎯 Completing reservation...");
+  console.log("Completing reservation...");
   
   try {
     // First check and accept terms and conditions if present
-    console.log("📋 Checking for terms and conditions...");
+    console.log("Checking for terms and conditions...");
     await page.act("If there is a terms and conditions checkbox, check it to agree to the terms");
     await page.waitForTimeout(1000);
     
     // Then complete the reservation
     await page.act("Complete the reservation by clicking the final confirmation or 'Complete Reservation' button");
-    console.log("✅ Reservation completed");
+    console.log("Reservation completed");
   } catch (error) {
-    console.log("❌ Could not complete reservation:", error.message);
+    console.log("Could not complete reservation:", error.message);
   }
 }
 
@@ -180,28 +180,28 @@ async function completeReservation(page: any): Promise<void> {
 async function main(): Promise<void> {
   const message = process.argv.slice(2).join(" ").trim() || DEFAULT_MESSAGE;
   
-  console.log("🎯 Starting reservation:", message);
+  console.log("Starting reservation:", message);
   const intent = parseMessage(message);
-  console.log("📋 Parsed intent:", intent);
+  console.log("Parsed intent:", intent);
 
   const config: ConstructorParams = { 
     env: "LOCAL", 
     verbose: 1 
   };
 
-  console.log("🚀 Initializing Stagehand...");
+  console.log("Initializing Stagehand...");
   const stagehand = new Stagehand(config);
   await stagehand.init();
   const page = stagehand.page;
 
   try {
     // Step 1: Navigate to OpenTable
-    console.log("🌐 Navigating to OpenTable...");
+    console.log("Navigating to OpenTable...");
     await page.goto("https://www.opentable.com/", { waitUntil: "domcontentloaded" });
     
     // Step 2: Search for restaurant
     await searchAndNavigateToRestaurant(page, intent.restaurant);
-    console.log("✅ Restaurant page loaded:", page.url());
+    console.log("Restaurant page loaded:", page.url());
     
     // Step 3: Set reservation details
     await setReservationDetails(page, intent);
@@ -210,7 +210,7 @@ async function main(): Promise<void> {
     const timeSelected = await selectTimeSlot(page, intent.time24);
     
     if (timeSelected) {
-      console.log("✅ Time slot selected, proceeding with booking...");
+      console.log("Time slot selected, proceeding with booking...");
       
       // Step 5: Complete booking process
       await selectSeatingOption(page);
@@ -218,21 +218,21 @@ async function main(): Promise<void> {
       await fillPhoneNumber(page);
       await completeReservation(page);
       
-      console.log("🎉 Full reservation process completed!");
+      console.log("Full reservation process completed!");
     } else {
-      console.log("❌ Could not select time slot - process stopped");
+      console.log("Could not select time slot - process stopped");
     }
 
-    console.log("🏁 Final URL:", page.url());
+    console.log("Final URL:", page.url());
     
     // Keep browser open briefly to see final state
-    console.log("⏳ Keeping browser open for 10 seconds...");
+    console.log("Keeping browser open for 10 seconds...");
     await page.waitForTimeout(10000);
     
   } catch (error) {
-    console.error("💥 Error in main flow:", error);
+    console.error("Error in main flow:", error);
   } finally {
-    console.log("🔚 Closing browser...");
+    console.log("Closing browser...");
     await stagehand.close();
   }
 }
